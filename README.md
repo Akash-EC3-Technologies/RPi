@@ -153,37 +153,87 @@
     sudo apt clean
     ```
 
+# Raspberry Pi 5 Virtualization Setup Guide
+
 ## Part 4: KVM/QEMU, libvirt, and virt-manager Setup on Raspberry Pi 5
 
-1.  **Install Required Packages**:
+1. **Install Required Packages**:
 
     ```bash
     sudo apt install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virtinst virt-manager
     ```
 
-2.  **Add Current User to libvirt and kvm Groups**
+2. **Add Current User to libvirt and kvm Groups**:
 
     ```bash
-       sudo usermod -aG libvirt $(whoami)
-       sudo usermod -aG kvm $(whoami)
+    sudo usermod -aG libvirt $(whoami)
+    sudo usermod -aG kvm $(whoami)
     ```
 
-    Reboot for changes to take effect.
+    Reboot for changes to take effect:
 
     ```bash
     sudo reboot
     ```
 
-    Your SSH connection will close during the reboot. Wait a minute or two and then attempt to reconnect using the SSH command from Part 2's setp 3.
+    > _Note_: Your SSH connection will close during the reboot. Wait a minute or two and then attempt to reconnect using the SSH command from **Part 2, Step 3**.
 
-3.  **Enable and Start libvirtd Service**
+3. **Enable and Start libvirtd Service**:
 
     ```bash
     sudo systemctl enable libvirtd
     sudo systemctl start libvirtd
     ```
 
-4.  Validate Installation
+4. **Validate Installation**:
+
     ```bash
     virt-host-validate
     ```
+
+---
+
+## Part 5: Installing Docker Engine on Raspberry Pi 5
+
+1. **Download and Install Docker Engine**:
+
+    ```bash
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+    ```
+
+2. **Enable Docker Service**:
+
+    ```bash
+    sudo systemctl enable docker
+    ```
+
+3. **Add Current User to the Docker Group**:
+
+    ```bash
+    sudo usermod -aG docker ${USER}
+    ```
+
+    Reboot for changes to take effect:
+
+    ```bash
+    sudo reboot
+    ```
+
+    > _Note_: Your SSH connection will close during the reboot. Wait a minute or two and then attempt to reconnect using the SSH command from **Part 2, Step 3**.
+
+4. **Verify Docker Installation**:
+
+    ```bash
+    docker version
+    ```
+
+5. **Run Test Container**:
+
+    ```bash
+    docker run hello-world
+    ```
+
+    > _Note_: This should download and run the `hello-world` container, confirming Docker is working correctly.
+
+---
