@@ -4,7 +4,7 @@ LED=PWR
 
 # Function to set LED state
 set_led_state() {
-    echo $1 > /sys/class/leds/$LED/brightness > /dev/null
+    echo $1 | sudo tee /sys/class/leds/$LED/brightness > /dev/null
 }
 
 # Function to clean up on exit
