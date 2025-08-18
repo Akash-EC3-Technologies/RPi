@@ -1,0 +1,14 @@
+# Use minimal Alpine image for ARM64
+FROM alpine:3.19
+
+# Install minimal dependencies
+RUN apk add --no-cache bash
+
+# Copy the LED blink script
+COPY blink_led.sh /usr/local/bin/blink_led.sh
+
+# Make the script executable
+RUN chmod +x /usr/local/bin/blink_led.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/usr/local/bin/blink_led.sh"]
