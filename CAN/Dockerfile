@@ -10,10 +10,10 @@ RUN apt-get update && apt-get install -y \
 
 # Copy source files
 WORKDIR /app
-COPY can_transmitter.c .
+COPY can-transmitter.c .
 
 # Compile the application
-RUN gcc can_transmitter.c -o can_transmitter
+RUN gcc can-transmitter.c -o can-transmitter
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
@@ -21,4 +21,4 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set entrypoint
-ENTRYPOINT ["/app/can_transmitter"]
+ENTRYPOINT ["/app/can-transmitter"]
