@@ -74,7 +74,7 @@ sudo vim /boot/firmware/config.txt
 -   Add this to the bottom of the config.txt:
 
 ```text
-dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25,spimaxfrequency=10000000
+dtoverlay=mcp2515-can0,oscillator=8000000,interrupt=25,spimaxfrequency=5000000
 ```
 
 -   Reboot
