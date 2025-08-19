@@ -46,6 +46,8 @@ Raspberry Pi 5 GPIO Header (J8)
 │ 23 SCLK │ 24 CE0   │
 └─────────┴──────────┘
 ```
+<img width="755" height="290" alt="image" src="https://github.com/user-attachments/assets/a4e79c99-5acb-4d67-821c-59051e3cc6b4" />
+
 
 ## Setup Instructions
 
