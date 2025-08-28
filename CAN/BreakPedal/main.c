@@ -7,6 +7,15 @@
 
 #define BRAKE_MSG_ID 0x123
 
+void send_can_message(int sock, break_pedal_state_t state)
+{
+    struct can_frame frame;
+    frame.can_id = BRAKE_MSG_ID;
+    frame.can_dlc = 1;
+    frame.data[0] = (state == BREAK_PEDAL_ACTIVE) ? 1 : 0;
+    send_can_frame(sock, &frame);
+}
+
 int main()
 {
     int sock = init_can_socket(CAN_IF_NAME);
@@ -20,7 +29,7 @@ int main()
     {
         if (hal_break_pedal_state_changed())
         {
-            send_can_message(hal_read_break_pedal_state());
+            send_can_message(sock, hal_read_break_pedal_state());
         }
         else
         {

@@ -3,7 +3,7 @@
 
 static int g_break_pedal_pin = 17;
 static break_pedal_state_t current_state;
-int hal_break_pedal_init(int pin)
+void hal_break_pedal_init(int pin)
 {
     g_break_pedal_pin = pin;
     gpio_init(g_break_pedal_pin);
@@ -18,7 +18,13 @@ break_pedal_state_t hal_read_break_pedal_state()
 
 int hal_break_pedal_state_changed()
 {
-    current_state =
+    break_pedal_state_t new_state = hal_read_break_pedal_state();
+    if (new_state != current_state)
+    {
+        current_state = new_state;
+        return 1; // state changed
+    }
+    return 0; // state not changed
 }
 
 void hal_break_pedal_cleanup()
