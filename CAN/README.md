@@ -15,7 +15,7 @@ This experiment demonstrates how to transmit random CAN frames using an MCP2515 
 
 | MCP2515 Pin      | Raspberry Pi GPIO Pin  | Physical Pin Number |
 | ---------------- | ---------------------- | ------------------- |
-| VCC              | 3.3V Power             | Pin 1               |
+| VCC              | 5V Power               | Pin 4               |
 | GND              | Ground                 | Pin 6               |
 | CS (Chip Select) | GPIO8 (SPI CE0)        | Pin 24              |
 | SO (MISO)        | GPIO9 (MISO)           | Pin 21              |
@@ -46,8 +46,8 @@ Raspberry Pi 5 GPIO Header (J8)
 │ 23 SCLK │ 24 CE0   │
 └─────────┴──────────┘
 ```
-<img width="755" height="290" alt="image" src="https://github.com/user-attachments/assets/a4e79c99-5acb-4d67-821c-59051e3cc6b4" />
 
+<img width="755" height="290" alt="image" src="https://github.com/user-attachments/assets/a4e79c99-5acb-4d67-821c-59051e3cc6b4" />
 
 ## Setup Instructions
 
@@ -76,7 +76,7 @@ sudo vim /boot/firmware/config.txt
 -   Add this to the bottom of the config.txt:
 
 ```text
-dtoverlay=mcp2515-can0,oscillator=8000000,interrupt=25,spimaxfrequency=5000000
+dtoverlay=mcp2515-can0,oscillator=8000000,interrupt=25,spimaxfrequency=1000000
 ```
 
 -   Reboot
@@ -85,21 +85,36 @@ dtoverlay=mcp2515-can0,oscillator=8000000,interrupt=25,spimaxfrequency=5000000
 sudo reboot
 ```
 
-### 4. Configure CAN Interface in Loopback Mode
+### 4. Configure CAN Interface
 
 ```bash
 # Bring down interface if up
 sudo ip link set can0 down
 
-# Set up loopback mode
-sudo ip link set can0 up type can bitrate 500000 loopback on
+sudo ip link set can0 up type can bitrate 125000 on
 
 # Verify interface
 ip -d link show can0
-# Should show "state ERROR-ACTIVE (loopback)"
+# Should show "state ERROR-ACTIVE"
 ```
 
-## Building the Image
+# Building and Running TailLampApplication
+
+```bash
+cd TailLamp
+make build
+make run
+```
+
+# Building and Running BreakPedalApplication
+
+```bash
+cd BrealPedal
+make build
+make run
+```
+
+## Building the Docker Image
 
 ```bash
 docker build -t can-transmitter .
