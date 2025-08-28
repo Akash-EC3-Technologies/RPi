@@ -3,7 +3,7 @@
 #include "lib/can/can.h"
 #include "hal/hal_break_pedal.h"
 
-#define BREAK_PEDAl_PIN 17
+#define BREAK_PEDAl_PIN 27
 
 #define BRAKE_MSG_ID 0x123
 
