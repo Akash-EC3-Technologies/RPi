@@ -29,6 +29,7 @@ int main()
     {
         if (hal_break_pedal_state_changed())
         {
+            printf("break pedal state changed: %s\n", hal_read_break_pedal_state() == BREAK_PEDAL_ACTIVE ? "ACTIVE" : "INACTIVE");
             send_can_message(sock, hal_read_break_pedal_state());
         }
         else
