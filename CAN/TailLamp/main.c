@@ -4,7 +4,7 @@
 #include "hal/hal_tail_lamp.h"
 
 #define BRAKE_MSG_ID 0x123
-#define TAIL_LAMP_PIN 14
+#define TAIL_LAMP_PIN 17
 
 void process_can_message(struct can_frame frame)
 {
