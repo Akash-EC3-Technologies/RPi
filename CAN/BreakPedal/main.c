@@ -12,7 +12,7 @@ void send_can_message(int sock, break_pedal_state_t state)
     struct can_frame frame;
     frame.can_id = BRAKE_MSG_ID;
     frame.can_dlc = 1;
-    frame.data[0] = (state == BREAK_PEDAL_ACTIVE) ? 1 : 0;
+    frame.data[0] = (state == BREAK_PEDAL_ACTIVE) ? 0x01 : 0x00;
     send_can_frame(sock, &frame);
 }
 
