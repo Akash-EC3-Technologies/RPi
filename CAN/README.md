@@ -50,7 +50,7 @@ Raspberry Pi 5 GPIO Header (J8)
 
 <img width="755" height="290" alt="image" src="https://github.com/user-attachments/assets/a4e79c99-5acb-4d67-821c-59051e3cc6b4" />
 
-## Setup Instructions
+## Instructions to setup Raspberry pi
 
 ### 1. Configure System
 
@@ -99,7 +99,7 @@ ip -d link show can0
 # Should show "state ERROR-ACTIVE"
 ```
 
-# Building and Running TailLampApplication
+## Building and Running TailLampApplication
 
 ```bash
 cd TailLamp
@@ -107,7 +107,7 @@ make build
 make run
 ```
 
-# Building and Running BreakPedalApplication
+## Building and Running BreakPedalApplication
 
 ```bash
 cd BrealPedal
@@ -115,34 +115,85 @@ make build
 make run
 ```
 
-## Building the Docker Image
+# Setting up the EC2 instance
+
+### 1. Install Dependencies
 
 ```bash
-docker build -t can-transmitter .
+sudo apt-get update
+sudo apt-get install -y linux-modules-extra-$(uname -r)
+sudo apt install -y build-essential can-utils
+sudo apt-get install -y docker.io
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo usermod -aG docker $USER
+sudo reboot
 ```
 
-## Running the Transmitter
+### 2. Load vcan kernal module and set up vcan0
 
 ```bash
-docker run --network host \
-           --cap-add=NET_ADMIN \
-           --cap-add=NET_RAW \
-           -it can-transmitter
+sudo modprobe vcan
+sudo ip link add dev vcan0 type vcan
+sudo ip link set up vcan0
 ```
 
-The container will start transmitting random CAN frames in loopback mode.
-
-### Monitoring CAN Traffic
-
-In a separate terminal:
+### 3. Check vcan0 is available
 
 ```bash
-candump can0
+ip link show vcan0
 ```
 
-You should see output like:
+### 4. Clone The git repository
 
+```bash
+git clone https://github.com/Akash-EC3-Technologies/RPi.git
+cd RPi/CAN
 ```
-can0  123   [4]  01 02 03 04
-can0  456   [2]  AA BB
+
+### 5. Build docker image
+
+```bash
+cd TailLamp
+make docker-build-test
+cd ../BreakPedal
+make docker-build-test
 ```
+
+### 6. Run docker image
+
+```bash
+cd TailLamp
+make docker-run
+cd ../BreakPedal
+make docker-run
+```
+
+### 7. Verify container startup
+
+```bash
+docker ps
+```
+
+### 8. Testing with candump and cansend
+
+open a new terminal and run candump to monitor the can bus
+
+```bash
+candump vcan0
+```
+
+open another terminal and run the following to test teh application
+
+```bash
+# WBID querry to set break pedal as active
+cansend vcan0 7E0#042EF14001
+# RBID querry to read tail lamp status
+cansend vcan0 7E0#0222F150
+# WBID querry to set break pedal as inactive
+cansend vcan0 7E0#042EF14000
+# RBID querry to read tail lamp status
+cansend vcan0 7E0#0222F150
+```
+
+The can dump should show the response messages from the application nodes
