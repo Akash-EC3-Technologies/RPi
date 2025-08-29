@@ -22,6 +22,7 @@ This integration test verifies the interaction between two ECUs (Brake Pedal ECU
 ### **1. Create Python Virtual Environment**
 
 ```bash
+sudo apt install python3.12-venv
 python3 -m venv venv
 source venv/bin/activate
 ```
