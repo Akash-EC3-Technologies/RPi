@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y \
     gcc \
     libc6-dev \
     make \
-    git \
+    libgpiod-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy source files

@@ -21,6 +21,7 @@ This experiment demonstrates how to transmit random CAN frames using an MCP2515 
 | SO (MISO)        | GPIO9 (MISO)           | Pin 21              |
 | SI (MOSI)        | GPIO10 (MOSI)          | Pin 19              |
 | SCK (Clock)      | GPIO11 (SCLK)          | Pin 23              |
+| INT              | GPIO25                 | Pin 22              |
 | CANH             | (To other CAN devices) | -                   |
 | CANL             | (To other CAN devices) | -                   |
 

@@ -1,78 +1,86 @@
 #include "gpio.h"
-#include <stdio.h>
+#include <gpiod.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
+#include <stdio.h>
 
-// Helper: write string to sysfs file
-static void writeFile(const char *path, const char *value)
+typedef struct
 {
-    int fd = open(path, O_WRONLY);
-    if (fd < 0)
+    struct gpiod_chip *chip;
+    struct gpiod_line *line;
+} gpio_internal;
+
+int gpio_init(gpio_handle *handle, const char *chipname, unsigned int line_num, gpio_direction dir)
+{
+    gpio_internal *internal = malloc(sizeof(gpio_internal));
+    if (!internal)
+        return -1;
+
+    internal->chip = gpiod_chip_open(chipname);
+    if (!internal->chip)
     {
-        perror("open");
-        exit(1);
+        perror("Failed to open GPIO chip");
+        free(internal);
+        return -1;
     }
-    if (write(fd, value, strlen(value)) < 0)
+
+    internal->line = gpiod_chip_get_line(internal->chip, line_num);
+    if (!internal->line)
     {
-        perror("write");
-        exit(1);
+        perror("Failed to get GPIO line");
+        gpiod_chip_close(internal->chip);
+        free(internal);
+        return -1;
     }
-    close(fd);
-}
 
-// Helper: read a sysfs file
-static int readFile(const char *path, char *buf, size_t size)
-{
-    int fd = open(path, O_RDONLY);
-    if (fd < 0)
+    if (dir == GPIO_OUTPUT)
     {
-        perror("open");
-        exit(1);
+        if (gpiod_line_request_output(internal->line, "gpio_control", 0) < 0)
+        {
+            perror("Failed to request line as output");
+            gpiod_chip_close(internal->chip);
+            free(internal);
+            return -1;
+        }
     }
-    int len = read(fd, buf, size - 1);
-    if (len < 0)
+    else
     {
-        perror("read");
-        exit(1);
+        if (gpiod_line_request_input(internal->line, "gpio_control") < 0)
+        {
+            perror("Failed to request line as input");
+            gpiod_chip_close(internal->chip);
+            free(internal);
+            return -1;
+        }
     }
-    buf[len] = '\0';
-    close(fd);
-    return len;
+
+    handle->internal = internal;
+    handle->direction = dir;
+    handle->line_num = line_num;
+    return 0;
 }
 
-void gpio_init(int pin)
+int gpio_set(gpio_handle *handle, int value)
 {
-    char path[64], pinStr[8];
-    snprintf(pinStr, sizeof(pinStr), "%d", pin);
-
-    // Export
-    writeFile("/sys/class/gpio/export", pinStr);
-
-    // Set direction to "out"
-    snprintf(path, sizeof(path), "/sys/class/gpio/gpio%d/direction", pin);
-    writeFile(path, "out");
+    gpio_internal *internal = handle->internal;
+    return gpiod_line_set_value(internal->line, value);
 }
 
-void gpio_set(int pin, int value)
+int gpio_get(gpio_handle *handle)
 {
-    char path[64];
-    snprintf(path, sizeof(path), "/sys/class/gpio/gpio%d/value", pin);
-    writeFile(path, value ? "1" : "0");
+    gpio_internal *internal = handle->internal;
+    return gpiod_line_get_value(internal->line);
 }
 
-int gpio_read(int pin)
+void gpio_cleanup(gpio_handle *handle)
 {
-    char path[64], buf[4];
-    snprintf(path, sizeof(path), "/sys/class/gpio/gpio%d/value", pin);
-    readFile(path, buf, sizeof(buf));
-    return (buf[0] == '1') ? 1 : 0;
-}
-
-void gpio_cleanup(int pin)
-{
-    char pinStr[8];
-    snprintf(pinStr, sizeof(pinStr), "%d", pin);
-    writeFile("/sys/class/gpio/unexport", pinStr);
+    gpio_internal *internal = handle->internal;
+    if (internal)
+    {
+        if (internal->line)
+            gpiod_line_release(internal->line);
+        if (internal->chip)
+            gpiod_chip_close(internal->chip);
+        free(internal);
+        handle->internal = NULL;
+    }
 }
