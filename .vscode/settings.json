@@ -4,6 +4,7 @@
         "stdio.h": "c",
         "can.h": "c",
         "hal_break_actuator.h": "c",
-        "hal_break_pedal.h": "c"
+        "hal_break_pedal.h": "c",
+        "gpio.h": "c"
     }
 }

@@ -10,38 +10,75 @@
 #include <fcntl.h>
 #include <errno.h>
 
-// Initialize CAN socket
-int init_can_socket(const char *ifname)
+int init_can_socket(const char *ifname, canid_t filter_id)
 {
-    int s;
-    struct sockaddr_can addr;
-    struct ifreq ifr;
-
-    if ((s = socket(PF_CAN, SOCK_RAW | SOCK_NONBLOCK, CAN_RAW)) < 0)
+    int sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    if (sock < 0)
     {
-        perror("Socket");
+        perror("socket");
         return -1;
     }
 
-    strcpy(ifr.ifr_name, ifname);
-    if (ioctl(s, SIOCGIFINDEX, &ifr) < 0)
+    struct ifreq ifr;
+    struct sockaddr_can addr;
+
+    // Copy interface name to ifreq structure
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ - 1);
+    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+
+    // Get interface index
+    if (ioctl(sock, SIOCGIFINDEX, &ifr) < 0)
     {
         perror("ioctl");
-        close(s);
+        close(sock);
         return -1;
     }
 
     addr.can_family = AF_CAN;
     addr.can_ifindex = ifr.ifr_ifindex;
 
-    if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+    // Apply filter (if filter_id != 0, otherwise accept all frames)
+    if (filter_id != 0)
     {
-        perror("Bind");
-        close(s);
+        struct can_filter rfilter;
+        rfilter.can_id = filter_id;
+        rfilter.can_mask = CAN_SFF_MASK; // Match all bits for standard ID
+        if (setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, &rfilter, sizeof(rfilter)) < 0)
+        {
+            perror("setsockopt");
+            close(sock);
+            return -1;
+        }
+    }
+
+    // Bind the socket
+    if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+    {
+        perror("bind");
+        close(sock);
         return -1;
     }
 
-    return s;
+    return sock;
+}
+
+// Read a CAN frame (non-blocking)
+int read_can_frame(int socket, struct can_frame *frame)
+{
+    int nbytes = read(socket, frame, sizeof(struct can_frame));
+    if (nbytes < 0)
+    {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        {
+            return 0; // No data available yet
+        }
+        else
+        {
+            perror("Read");
+            return -1;
+        }
+    }
+    return nbytes; // Frame read successfully
 }
 
 // Send a CAN frame

@@ -61,16 +61,12 @@ int gpio_init(gpio_handle *handle, const char *chipname, unsigned int line_num, 
 
 int gpio_set(gpio_handle *handle, int value)
 {
-    if (handle->direction != GPIO_OUTPUT)
-        return -1;
     gpio_internal *internal = handle->internal;
     return gpiod_line_set_value(internal->line, value);
 }
 
 int gpio_get(gpio_handle *handle)
 {
-    if (handle->direction != GPIO_INPUT)
-        return -1;
     gpio_internal *internal = handle->internal;
     return gpiod_line_get_value(internal->line);
 }

@@ -15,7 +15,10 @@ break_pedal_state_t hal_read_break_pedal_state()
 {
     return gpio_get(&break_pedal_handle);
 }
-
+void hal_set_break_pedal_state(break_pedal_state_t state)
+{
+    gpio_set(&break_pedal_handle, state);
+}
 int hal_break_pedal_state_changed()
 {
     break_pedal_state_t new_state = hal_read_break_pedal_state();

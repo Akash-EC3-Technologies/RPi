@@ -10,6 +10,7 @@ typedef enum
 void hal_break_pedal_init(int pin);
 break_pedal_state_t hal_read_break_pedal_state();
 int hal_break_pedal_state_changed();
+void hal_set_break_pedal_state(break_pedal_state_t state);
 void hal_break_pedal_cleanup();
 
 #endif
