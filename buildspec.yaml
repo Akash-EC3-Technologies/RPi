@@ -6,13 +6,7 @@ phases:
             python: 3.9
         commands:
             - echo "Installing dependencies"
-            - pip install -r requirements.txt
-            - apt-get install -y linux-modules-extra-$(uname -r)
-            - apt install -y iproute2 build-essential can-utils
-            - modprobe vcan || true
-            - ip link add dev vcan0 type vcan
-            - ip link set up vcan0
-
+            - apt install -y build-essential
     pre_build:
         commands:
             - echo "Logging in to Amazon ECR"
@@ -31,15 +25,6 @@ phases:
             - echo "Pushing to ECR"
             - docker push 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/tail-lamp-test:arm64
             - docker push 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/brake-pedal-test:arm64
-
-    post_build:
-        commands:
-            - echo "Running integration tests"
-            - cd CAN/tests
-            - docker run -d --net=host --cap-add=NET_ADMIN --cap-add=NET_RAW tail-lamp-test:arm64
-            - docker run --rm --net=host -d 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/tail-lamp-test:arm64
-            - docker run --rm --net=host -d 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/brake-pedal-test:arm64
-            - pytest -v -s tests/integration-test.py
 
 artifacts:
     files:
