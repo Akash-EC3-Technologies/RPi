@@ -1,0 +1,35 @@
+version: 0.2
+
+phases:
+    install:
+        runtime-versions:
+            python: 3.9
+        commands:
+            - echo "Installing dependencies"
+            - apt install -y build-essential
+            - echo "Installing buildx and registering QEMU"
+            - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+            - docker buildx create --name mybuilder --driver docker-container --use || true
+            - docker buildx inspect --bootstrap
+    pre_build:
+        commands:
+            - echo "Logging in to Amazon ECR"
+            - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+    build:
+        commands:
+            - echo "Building Docker images"
+            - cd CAN/TailLamp
+            - docker buildx build --platform linux/arm64 -t tail-lamp-test:arm64 --load .
+            - cd ../BreakPedal
+            - docker buildx build --platform linux/arm64 -t brake-pedal-test:arm64 --load .
+            - echo "Tagging images"
+            - docker tag tail-lamp-test:arm64 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/tail-lamp-test:arm64
+            - docker tag brake-pedal-test:arm64 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/brake-pedal-test:arm64
+            - echo "Pushing to ECR"
+            - docker push 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/tail-lamp-test:arm64
+            - docker push 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/brake-pedal-test:arm64
+
+artifacts:
+    files:
+        - '**/*'
