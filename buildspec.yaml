@@ -7,6 +7,10 @@ phases:
         commands:
             - echo "Installing dependencies"
             - apt install -y build-essential
+            - echo "Installing buildx and registering QEMU"
+            - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+            - docker buildx create --name mybuilder --driver docker-container --use || true
+            - docker buildx inspect --bootstrap
     pre_build:
         commands:
             - echo "Logging in to Amazon ECR"
@@ -16,9 +20,9 @@ phases:
         commands:
             - echo "Building Docker images"
             - cd CAN/TailLamp
-            - make docker-build-test
+            - docker buildx build --platform linux/arm64 -t tail-lamp-test:arm64 --load .
             - cd ../BreakPedal
-            - make docker-build-test
+            - docker buildx build --platform linux/arm64 -t break-pedal-test:arm64 --load .
             - echo "Tagging images"
             - docker tag tail-lamp-test:arm64 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/tail-lamp-test:arm64
             - docker tag brake-pedal-test:arm64 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/brake-pedal-test:arm64
