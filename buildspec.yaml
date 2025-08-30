@@ -22,7 +22,7 @@ phases:
             - cd CAN/TailLamp
             - docker buildx build --platform linux/arm64 -t tail-lamp-test:arm64 --load .
             - cd ../BreakPedal
-            - docker buildx build --platform linux/arm64 -t break-pedal-test:arm64 --load .
+            - docker buildx build --platform linux/arm64 -t brake-pedal-test:arm64 --load .
             - echo "Tagging images"
             - docker tag tail-lamp-test:arm64 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/tail-lamp-test:arm64
             - docker tag brake-pedal-test:arm64 236796666074.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/brake-pedal-test:arm64
